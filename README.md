@@ -1,14 +1,18 @@
 # Kito
 
-Kito est une application Flutter en français pour gérer le matériel d'une unité
-scoute, même hors ligne. Les données sont enregistrées localement dans une base
+Téléchargement Android : https://yunki0.github.io/Kito/
+
+Kito est une application Flutter en français pour gérer l'inventaire matériel
+d'une unité scoute, même hors ligne. Les données sont enregistrées localement dans une base
 SQLite sur l'appareil. Android, iOS, macOS, Linux et Windows sont pris en charge.
+L'application suit automatiquement le thème clair ou sombre du système.
 
 L'identité visuelle reprend le logo montagne-sapin, le vert forêt (`#0F5132`),
 le vert olive (`#688F58`), l'ambre (`#F5A623`) et l'ivoire (`#F8F7EF`) du visuel
 fourni. L'écran de démarrage est entièrement vectoriel : symbole Kito centré sur 
 fond ivoire, nom et baseline en fondu, collines en arrière-plan. 
-Le splash natif (flutter_native_splash) affiche le même symbole pour une transition sans saut.
+Le splash natif obligatoire des plateformes reste volontairement limité à un
+fond ivoire uni ; l'écran de démarrage Flutter détaillé est celui à conserver.
 
 Les sources graphiques sont regroupées dans `assets/branding/`. Les fichiers
 `kito_mark_monochrome.svg` et `kito_mark_monochrome_white.svg` sont les variantes
@@ -17,6 +21,15 @@ SVG, tandis que les variantes PNG carrées sont utilisées par les écrans de
 démarrage natifs.
 La palette, la typographie et le thème Material sont centralisés dans
 `lib/core/theme/`.
+
+Les données peuvent être exportées dans un fichier JSON depuis le menu de
+l'application, puis restaurées sur cet appareil ou un autre. La restauration
+remplace l'inventaire et le journal après confirmation. Conservez vos
+sauvegardes dans un emplacement sûr.
+Le même menu permet d'exporter l'inventaire en PDF, avec un résumé des stocks
+et un tableau adapté à l'impression, ou en CSV pour l'ouvrir dans un tableur.
+Lors de la mise à jour, les éventuels prêts en cours sont considérés comme
+rendus ; leur historique d'activité reste consultable.
 
 ## Démarrer
 
@@ -60,21 +73,19 @@ de publication est nécessaire avant une diffusion publique.
 
 L'application démarre avec un inventaire vide. Utilisez **Ajouter du matériel**
 pour créer les premières fiches. Les quantités sont réparties par état ; seuls
-les articles neufs ou en bon état peuvent être prêtés. Dans une fiche,
+les articles neufs ou en bon état sont considérés disponibles. Dans une fiche,
 **Consommable** active le seuil d'alerte de stock.
 
 ## Fonctionnalités
 
 - Inventaire consultable, recherche et filtres par catégorie / stock bas.
 - Création, modification et suppression des fiches de matériel.
-- Sortie d'une quantité à une personne, avec date de retour prévue facultative.
-- Retours complets ou partiels et suivi des retards.
-- Indicateurs de stock disponible et emprunté, alertes consommables.
-- Journal local des ajouts, modifications, suppressions, sorties et retours.
+- Indicateurs de stock disponible, à réparer et hors service.
+- Journal local des ajouts, modifications et suppressions.
+- Sauvegarde et restauration locale de l'inventaire et du journal.
+- Export de l'inventaire en PDF ou CSV.
 
-Une fiche ne peut pas être supprimée tant qu'un emprunt est en cours. Les
-enregistrements du journal sont conservés si une fiche de matériel est
-supprimée.
+Les fiches supprimées restent consignées dans le journal.
 
 ## Vérification
 
@@ -82,6 +93,19 @@ supprimée.
 flutter analyze
 flutter test
 ```
+
+## Publication Android
+
+La page de téléchargement est publiée sur GitHub Pages à chaque mise à jour de
+`main`. Pour créer une nouvelle version Android, incrémentez `version` dans
+`pubspec.yaml`, poussez le commit puis créez et poussez un tag correspondant
+(par exemple `v1.0.7`). GitHub Actions construit des APK Android séparés par
+architecture et les joint à la release GitHub. La page propose la dernière
+version disponible.
+
+La version iOS est définie par le même champ `version` Flutter, mais sa
+distribution sera ajoutée lorsque l’application sera publiée sur l’App Store
+ou TestFlight.
 
 Les données restent sur l'appareil : aucune synchronisation ni sauvegarde cloud
 n'est actuellement configurée. La suppression des données de l'application

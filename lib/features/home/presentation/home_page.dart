@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../core/branding/kito_brand.dart';
-import '../../../core/theme/kito_colors.dart';
+import '../../../core/database/inventory_backup_service.dart';
+import '../../../core/export/inventory_export_service.dart';
 import '../../inventory/domain/equipment_item.dart';
 import '../../inventory/presentation/equipment_form_page.dart';
 import '../../inventory/presentation/inventory_providers.dart';
 import 'history_page.dart';
 import 'inventory_page.dart';
-import 'movements_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -20,12 +21,11 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 0;
 
-  static const _titles = ['Mon matériel', 'Emprunts', 'Historique'];
+  static const _titles = ['Mon matériel', 'Historique'];
 
   void _refreshData() {
     ref
       ..invalidate(equipmentProvider)
-      ..invalidate(movementsProvider)
       ..invalidate(historyProvider);
   }
 
@@ -34,6 +34,117 @@ class _HomePageState extends ConsumerState<HomePage> {
       MaterialPageRoute(builder: (_) => EquipmentFormPage(item: item)),
     );
     if (result == true) _refreshData();
+  }
+
+  Future<void> _createBackup() async {
+    try {
+      final database = await ref.read(appDatabaseProvider.future);
+      final bytes = await InventoryBackupService(database).createBackup();
+      final savedFile = await FilePicker.saveFile(
+        fileName: 'kito-sauvegarde-${DateTime.now().toIso8601String().substring(0, 10)}.json',
+        bytes: bytes,
+        mimeType: 'application/json',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        dialogTitle: 'Enregistrer une sauvegarde Kito',
+      );
+      if (savedFile == null || !mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sauvegarde enregistrée.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Création de la sauvegarde impossible : $error')),
+      );
+    }
+  }
+
+  Future<void> _exportInventory({required bool asPdf}) async {
+    try {
+      final equipment = await ref.read(equipmentProvider.future);
+      final service = const InventoryExportService();
+      final bytes = asPdf
+          ? await service.createPdf(equipment)
+          : service.createCsv(equipment);
+      final date = DateTime.now().toIso8601String().substring(0, 10);
+      final extension = asPdf ? 'pdf' : 'csv';
+      final savedFile = await FilePicker.saveFile(
+        fileName: 'kito-inventaire-$date.$extension',
+        bytes: bytes,
+        mimeType: asPdf ? 'application/pdf' : 'text/csv',
+        type: FileType.custom,
+        allowedExtensions: [extension],
+        dialogTitle: asPdf
+            ? 'Exporter l’inventaire en PDF'
+            : 'Exporter l’inventaire en CSV',
+      );
+      if (savedFile == null || !mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            asPdf
+                ? 'Inventaire PDF exporté.'
+                : 'Inventaire CSV exporté.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Export de l’inventaire impossible : $error')),
+      );
+    }
+  }
+
+  Future<void> _restoreBackup() async {
+    try {
+      final selection = await FilePicker.pickFile(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        dialogTitle: 'Choisir une sauvegarde Kito',
+      );
+      if (selection == null || !mounted) return;
+      final bytes = await selection.readAsBytes();
+      if (!mounted) return;
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Remplacer les données ?'),
+          content: const Text(
+            'La sauvegarde remplacera tout le matériel et le journal actuels. '
+            'Cette opération ne peut pas être annulée. Faites une sauvegarde '
+            'des données actuelles avant de continuer.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Annuler'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Remplacer'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+      final database = await ref.read(appDatabaseProvider.future);
+      final count = await InventoryBackupService(
+        database,
+      ).restoreBackup(bytes);
+      _refreshData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sauvegarde restaurée : $count fiches.')),
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Restauration impossible : $error')),
+      );
+    }
   }
 
   @override
@@ -61,7 +172,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _buildHome(BuildContext context) {
     final pages = [
       InventoryPage(onEdit: _openEquipmentForm, onChanged: _refreshData),
-      MovementsPage(onChanged: _refreshData),
       const HistoryPage(),
     ];
     return Scaffold(
@@ -99,6 +209,60 @@ class _HomePageState extends ConsumerState<HomePage> {
                 icon: const Icon(Icons.add),
               ),
             ),
+            PopupMenuButton<String>(
+              tooltip: 'Exports, sauvegarde et apparence',
+              onSelected: (action) {
+                if (action == 'backup') _createBackup();
+                if (action == 'restore') _restoreBackup();
+                if (action == 'export_pdf') _exportInventory(asPdf: true);
+                if (action == 'export_csv') _exportInventory(asPdf: false);
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'export_pdf',
+                  child: ListTile(
+                    leading: Icon(Icons.picture_as_pdf_outlined),
+                    title: Text('Exporter en PDF'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'export_csv',
+                  child: ListTile(
+                    leading: Icon(Icons.table_chart_outlined),
+                    title: Text('Exporter en CSV'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'backup',
+                  child: ListTile(
+                    leading: Icon(Icons.backup_outlined),
+                    title: Text('Créer une sauvegarde'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'restore',
+                  child: ListTile(
+                    leading: Icon(Icons.settings_backup_restore),
+                    title: Text('Restaurer une sauvegarde'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuDivider(),
+                PopupMenuItem<String>(
+                  enabled: false,
+                  child: ListTile(
+                    leading: Icon(Icons.brightness_6_outlined),
+                    title: Text('Thème du système'),
+                    subtitle: Text('Clair ou sombre automatiquement'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       body: IndexedStack(index: _selectedIndex, children: pages),
@@ -111,10 +275,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             icon: Icon(Icons.inventory_2_outlined),
             selectedIcon: Icon(Icons.inventory_2),
             label: 'Matériel',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.swap_horiz),
-            label: 'Emprunts',
           ),
           NavigationDestination(
             icon: Icon(Icons.history),
@@ -134,7 +294,7 @@ class _StartupError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ColoredBox(
-    color: KitoColors.background,
+    color: Theme.of(context).colorScheme.surface,
     child: SafeArea(
       child: Center(
         child: Padding(
@@ -153,7 +313,9 @@ class _StartupError extends StatelessWidget {
               Text(
                 '$error',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: KitoColors.textSecondary),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 18),
               FilledButton.icon(

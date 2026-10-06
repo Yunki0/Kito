@@ -12,6 +12,8 @@ class KitoApp extends StatelessWidget {
       title: 'Kito',
       debugShowCheckedModeBanner: false,
       theme: KitoTheme.light,
+      darkTheme: KitoTheme.dark,
+      themeMode: ThemeMode.system,
       home: const HomePage(),
     );
   }

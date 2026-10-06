@@ -4,13 +4,37 @@ import 'kito_colors.dart';
 import 'kito_typography.dart';
 
 abstract final class KitoTheme {
-  static ThemeData get light {
+  static ThemeData get light => _build(dark: false);
+
+  static ThemeData get dark => _build(dark: true);
+
+  static ThemeData _build({required bool dark}) {
+    final background = dark ? KitoColors.darkBackground : KitoColors.background;
+    final surface = dark ? KitoColors.darkSurface : KitoColors.surface;
+    final surfaceMuted = dark
+        ? KitoColors.darkSurfaceMuted
+        : KitoColors.surfaceMuted;
+    final primary = dark ? KitoColors.darkPrimary : KitoColors.primary;
+    final secondary = dark ? KitoColors.darkSecondary : KitoColors.secondary;
+    final textPrimary = dark
+        ? KitoColors.darkTextPrimary
+        : KitoColors.textPrimary;
+    final textSecondary = dark
+        ? KitoColors.darkTextSecondary
+        : KitoColors.textSecondary;
+    final border = dark ? KitoColors.darkBorder : KitoColors.border;
+    final error = dark ? KitoColors.darkError : KitoColors.error;
+    final selectedGreen = dark
+        ? KitoColors.darkSelectedGreen
+        : KitoColors.selectedGreen;
+
     final colorScheme = ColorScheme.fromSeed(
       seedColor: KitoColors.primary,
-      primary: KitoColors.primary,
-      secondary: KitoColors.secondary,
-      surface: KitoColors.background,
-      error: KitoColors.error,
+      brightness: dark ? Brightness.dark : Brightness.light,
+      primary: primary,
+      secondary: secondary,
+      surface: background,
+      error: error,
       tertiary: KitoColors.accent,
     );
 
@@ -18,74 +42,74 @@ abstract final class KitoTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: KitoTypography.textTheme,
-      scaffoldBackgroundColor: KitoColors.background,
-      canvasColor: KitoColors.background,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: KitoColors.background,
-        foregroundColor: KitoColors.textPrimary,
+      scaffoldBackgroundColor: background,
+      canvasColor: background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: background,
+        foregroundColor: textPrimary,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: KitoColors.surfaceMuted,
-        indicatorColor: KitoColors.selectedGreen,
+        backgroundColor: surfaceMuted,
+        indicatorColor: selectedGreen,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
             fontSize: 12,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? KitoColors.primary : KitoColors.textPrimary,
+            color: selected ? primary : textPrimary,
           );
         }),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: KitoColors.surface,
+        fillColor: surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
         ),
-        labelStyle: const TextStyle(color: KitoColors.textSecondary),
+        labelStyle: TextStyle(color: textSecondary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: KitoColors.border),
+          borderSide: BorderSide(color: border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: KitoColors.primary, width: 1.5),
+          borderSide: BorderSide(color: primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: KitoColors.error),
+          borderSide: BorderSide(color: error),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: KitoColors.error, width: 1.5),
+          borderSide: BorderSide(color: error, width: 1.5),
         ),
       ),
       cardTheme: CardThemeData(
-        color: KitoColors.surface,
+        color: surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: KitoColors.border),
+          side: BorderSide(color: border),
         ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: KitoColors.background,
+        backgroundColor: background,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: KitoColors.surface,
-        selectedColor: KitoColors.selectedGreen,
-        side: const BorderSide(color: KitoColors.border),
+        backgroundColor: surface,
+        selectedColor: selectedGreen,
+        side: BorderSide(color: border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -99,8 +123,8 @@ abstract final class KitoTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 46),
-          foregroundColor: KitoColors.primary,
-          side: const BorderSide(color: KitoColors.borderStrong),
+          foregroundColor: primary,
+          side: BorderSide(color: border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),

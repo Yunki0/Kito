@@ -11,14 +11,13 @@ void main() {
       goodQuantity: 3,
       repairQuantity: 1,
       unusableQuantity: 1,
-      lowStockThreshold: 2,
+      lowStockThreshold: 4,
       isConsumable: true,
-      borrowedQuantity: 2,
     );
 
     test('calculates physical and available stock from condition counts', () {
       expect(item.physicalQuantity, 6);
-      expect(item.availableQuantity, 2);
+      expect(item.availableQuantity, 4);
     });
 
     test('flags consumable stock at or below the alert threshold', () {

@@ -19,4 +19,18 @@ abstract final class KitoColors {
   static const selectedGreen = Color(0xFFDCE7D3);
   static const paleTextOnPrimary = Color(0xFFD9E8DF);
   static const gradientGreen = Color(0xFF256444);
+  static const darkBackground = Color(0xFF101A15);
+  static const darkSurface = Color(0xFF19251E);
+  static const darkSurfaceMuted = Color(0xFF202F26);
+  static const darkTextPrimary = Color(0xFFE8EEE9);
+  static const darkTextSecondary = Color(0xFFB0BDB4);
+  static const darkPrimary = Color(0xFF8FC99E);
+  static const darkSecondary = Color(0xFFB2CC8D);
+  static const darkError = Color(0xFFFFB4AB);
+  static const darkBorder = Color(0xFF35453A);
+  static const darkSelectedGreen = Color(0xFF304536);
+  static const darkPaleGreen = Color(0xFF29392F);
+  static const darkGradientGreen = Color(0xFF204C34);
+  static const bannerText = Color(0xFFFFFFFF);
+  static const darkBannerText = Color(0xFFE8EEE9);
 }

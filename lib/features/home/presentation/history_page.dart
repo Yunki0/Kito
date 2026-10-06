@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/branding/kito_brand.dart';
-import '../../../core/theme/kito_colors.dart';
 import '../../inventory/presentation/inventory_providers.dart';
 
 class HistoryPage extends ConsumerWidget {
@@ -31,25 +30,28 @@ class HistoryPage extends ConsumerWidget {
       ),
       data: (entries) {
         if (entries.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(28),
+              padding: const EdgeInsets.all(28),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     Icons.history,
                     size: 54,
-                    color: KitoColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   SizedBox(height: 14),
                   Text(
                     'Le journal est encore vide',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Les ajouts, modifications, sorties et retours seront conservés ici.',
+                    'Les ajouts, modifications et suppressions seront conservés ici.',
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -74,9 +76,14 @@ class HistoryPage extends ConsumerWidget {
                 (entry) => Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
-                    leading: const CircleAvatar(
-                      backgroundColor: KitoColors.paleGreen,
-                      child: Icon(Icons.check, color: KitoColors.primary),
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                     title: Text(entry.message),
                     subtitle: Text(_formatDate(entry.createdAt)),

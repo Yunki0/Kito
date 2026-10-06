@@ -14,7 +14,7 @@ class AppDatabase {
         databasePath ?? path.join(await getDatabasesPath(), 'kito.db');
     final database = await openDatabase(
       resolvedPath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE equipment (
@@ -31,24 +31,17 @@ class AppDatabase {
           )
         ''');
         await db.execute('''
-          CREATE TABLE movements (
-            id TEXT PRIMARY KEY,
-            equipment_id TEXT NOT NULL,
-            borrower TEXT NOT NULL,
-            quantity INTEGER NOT NULL,
-            returned_quantity INTEGER NOT NULL DEFAULT 0,
-            checked_out_at TEXT NOT NULL,
-            due_at TEXT,
-            FOREIGN KEY (equipment_id) REFERENCES equipment(id)
-          )
-        ''');
-        await db.execute('''
           CREATE TABLE activity (
             id TEXT PRIMARY KEY,
             message TEXT NOT NULL,
             created_at TEXT NOT NULL
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('DROP TABLE IF EXISTS movements');
+        }
       },
     );
     return AppDatabase._(database);

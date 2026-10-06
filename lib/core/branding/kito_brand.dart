@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../theme/kito_colors.dart';
-
 /// Pastille verte avec le symbole (AppBar, écran d'erreur). Inchangé.
 class KitoMark extends StatelessWidget {
   const KitoMark({super.key, this.size = 42, this.padding = 5});
@@ -16,7 +14,7 @@ class KitoMark extends StatelessWidget {
     height: size,
     padding: EdgeInsets.all(padding),
     decoration: BoxDecoration(
-      color: KitoColors.primary,
+      color: Theme.of(context).colorScheme.primary,
       borderRadius: BorderRadius.circular(size * 0.29),
     ),
     child: Image.asset(
@@ -95,12 +93,13 @@ class _KitoSplashViewState extends State<KitoSplashView>
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return Semantics(
       liveRegion: true,
       label: widget.message,
       child: ExcludeSemantics(
         child: ColoredBox(
-          color: KitoColors.background,
+          color: colorScheme.surface,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final centerY = constraints.maxHeight / 2;
@@ -121,7 +120,12 @@ class _KitoSplashViewState extends State<KitoSplashView>
                           child: child,
                         ),
                       ),
-                      child: const CustomPaint(painter: _HillsPainter()),
+                      child: CustomPaint(
+                        painter: _HillsPainter(
+                          backColor: colorScheme.primaryContainer,
+                          frontColor: colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
                     ),
                   ),
                   Center(
@@ -144,10 +148,10 @@ class _KitoSplashViewState extends State<KitoSplashView>
                               begin: const Offset(0, 0.25),
                               end: Offset.zero,
                             ).animate(_wordmark),
-                            child: const Text(
+                            child: Text(
                               'Kito',
                               style: TextStyle(
-                                color: KitoColors.primary,
+                                color: colorScheme.primary,
                                 fontSize: 44,
                                 height: 1.1,
                                 fontWeight: FontWeight.w800,
@@ -159,11 +163,11 @@ class _KitoSplashViewState extends State<KitoSplashView>
                         const SizedBox(height: 6),
                         FadeTransition(
                           opacity: _tagline,
-                          child: const Text(
+                          child: Text(
                             'Le matériel de l’unité,\ntoujours à portée de main',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: KitoColors.textSecondary,
+                              color: colorScheme.onSurfaceVariant,
                               fontSize: 14,
                               height: 1.4,
                             ),
@@ -179,8 +183,8 @@ class _KitoSplashViewState extends State<KitoSplashView>
                               child: LinearProgressIndicator(
                                 minHeight: 3,
                                 value: reduceMotion ? 0.4 : null,
-                                color: KitoColors.secondary,
-                                backgroundColor: KitoColors.selectedGreen,
+                                color: colorScheme.secondary,
+                                backgroundColor: colorScheme.surfaceContainerHighest,
                               ),
                             ),
                           ),
@@ -199,7 +203,10 @@ class _KitoSplashViewState extends State<KitoSplashView>
 }
 
 class _HillsPainter extends CustomPainter {
-  const _HillsPainter();
+  const _HillsPainter({required this.backColor, required this.frontColor});
+
+  final Color backColor;
+  final Color frontColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -213,7 +220,7 @@ class _HillsPainter extends CustomPainter {
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(back, Paint()..color = KitoColors.selectedGreen);
+    canvas.drawPath(back, Paint()..color = backColor);
 
     final front = Path()
       ..moveTo(0, h * 0.65)
@@ -221,15 +228,14 @@ class _HillsPainter extends CustomPainter {
       ..lineTo(w, h)
       ..lineTo(0, h)
       ..close();
-    canvas.drawPath(front, Paint()..color = KitoColors.paleGreen);
+    canvas.drawPath(front, Paint()..color = frontColor);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Chargement léger à l'intérieur d'un onglet (inventaire, emprunts, journal).
-/// Remplace l'ancien usage du splash plein écran de 3,8 Mo.
+/// Indicateur léger utilisé pendant le chargement du contenu d'un onglet.
 class KitoLoadingView extends StatelessWidget {
   const KitoLoadingView({
     super.key,
@@ -239,31 +245,34 @@ class KitoLoadingView extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    liveRegion: true,
-    label: message,
-    child: ExcludeSemantics(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: KitoColors.primary,
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      liveRegion: true,
+      label: message,
+      child: ExcludeSemantics(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: colorScheme.primary,
+                ),
               ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: KitoColors.textSecondary),
-            ),
-          ],
+              const SizedBox(height: 14),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

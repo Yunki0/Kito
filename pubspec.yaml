@@ -1,5 +1,5 @@
 name: kito
-description: "Inventaire local de matériel et suivi des emprunts pour une unité scoute."
+description: "Inventaire local de matériel pour une unité scoute."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.4+5
+version: 1.0.6+7
 
 environment:
   sdk: ^3.13.5
@@ -43,6 +43,8 @@ dependencies:
   equatable: ^3.0.0
   sqflite_common_ffi: ^2.4.3
   flutter_svg: ^2.3.0
+  file_picker: ^13.1.0
+  pdf: ^3.13.1
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +72,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/branding/
+    - assets/fonts/
 
 flutter_launcher_icons:
   android: true
@@ -93,15 +96,12 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#F8F7EF"
-  image: assets/branding/kito_splash_mark.png
-  ios_content_mode: scaleAspectFit
   android: true
   ios: true
   web: true
   android_12:
     color: "#F8F7EF"
-    image: assets/branding/kito_splash_mark_android12.png
-    icon_background_color: "#F8F7EF"
+    image: assets/branding/kito_splash_blank_android12.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

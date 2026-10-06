@@ -12,7 +12,7 @@ final appDatabaseProvider = FutureProvider<AppDatabase>(
 final databaseReadyProvider = FutureProvider<void>((ref) async {
   await Future.wait([
     ref.watch(appDatabaseProvider.future),
-    Future<void>.delayed(const Duration(milliseconds: 800)),
+    Future<void>.delayed(const Duration(milliseconds: 1400)),
   ]);
 });
 
@@ -23,10 +23,6 @@ final inventoryRepositoryProvider = FutureProvider<InventoryRepository>((ref) as
 
 final equipmentProvider = FutureProvider<List<EquipmentItem>>((ref) async {
   return (await ref.watch(inventoryRepositoryProvider.future)).getEquipment();
-});
-
-final movementsProvider = FutureProvider<List<StockMovement>>((ref) async {
-  return (await ref.watch(inventoryRepositoryProvider.future)).getMovements();
 });
 
 final historyProvider = FutureProvider<List<ActivityEntry>>((ref) async {

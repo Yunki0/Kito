@@ -8,7 +8,11 @@ import '../../inventory/presentation/inventory_providers.dart';
 import 'inventory_actions.dart';
 
 class InventoryPage extends ConsumerStatefulWidget {
-  const InventoryPage({required this.onEdit, required this.onChanged, super.key});
+  const InventoryPage({
+    required this.onEdit,
+    required this.onChanged,
+    super.key,
+  });
 
   final ValueChanged<EquipmentItem> onEdit;
   final VoidCallback onChanged;
@@ -38,13 +42,17 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
         onRetry: () => ref.invalidate(equipmentProvider),
       ),
       data: (items) {
-        final categories = ['Tout', ...{for (final item in items) item.category}];
+        final categories = [
+          'Tout',
+          ...{for (final item in items) item.category},
+        ];
         final query = _searchController.text.trim().toLowerCase();
         final visible = items.where((item) {
           final matchesSearch =
               item.name.toLowerCase().contains(query) ||
               item.category.toLowerCase().contains(query);
-          final matchesCategory = _category == 'Tout' || item.category == _category;
+          final matchesCategory =
+              _category == 'Tout' || item.category == _category;
           return matchesSearch &&
               matchesCategory &&
               (!_lowStockOnly || item.isLowStock);
@@ -53,9 +61,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           0,
           (total, item) => total + item.availableQuantity,
         );
-        final borrowed = items.fold<int>(
+        final repair = items.fold<int>(
           0,
-          (total, item) => total + item.borrowedQuantity,
+          (total, item) => total + item.repairQuantity,
         );
         final alerts = items.where((item) => item.isLowStock).length;
 
@@ -67,7 +75,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
               _WelcomeCard(
                 itemCount: items.length,
                 available: available,
-                borrowed: borrowed,
+                repair: repair,
                 alerts: alerts,
               ),
               const SizedBox(height: 22),
@@ -76,7 +84,10 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                   const Expanded(
                     child: Text(
                       'Votre inventaire',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   Text(
@@ -118,7 +129,8 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                         child: ChoiceChip(
                           label: Text(category),
                           selected: _category == category,
-                          onSelected: (_) => setState(() => _category = category),
+                          onSelected: (_) =>
+                              setState(() => _category = category),
                         ),
                       ),
                     ),
@@ -137,8 +149,7 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                 _EmptyState(
                   icon: Icons.backpack_outlined,
                   title: 'Votre inventaire commence ici',
-                  message:
-                      'Ajoutez les tentes, outils et consommables de votre unité pour suivre le stock et les emprunts.',
+                  message: 'Ajoutez les tentes, outils et consommables de votre unité pour suivre le stock.',
                   actionLabel: 'Ajouter du matériel',
                   onAction: () => widget.onEdit(
                     const EquipmentItem(
@@ -166,12 +177,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                     child: _EquipmentCard(
                       item: item,
                       onEdit: () => widget.onEdit(item),
-                      onLend: () => showLendDialog(
-                        context: context,
-                        ref: ref,
-                        item: item,
-                        onChanged: widget.onChanged,
-                      ),
                       onDelete: () => confirmDeleteEquipment(
                         context: context,
                         ref: ref,
@@ -193,22 +198,27 @@ class _WelcomeCard extends StatelessWidget {
   const _WelcomeCard({
     required this.itemCount,
     required this.available,
-    required this.borrowed,
+    required this.repair,
     required this.alerts,
   });
 
   final int itemCount;
   final int available;
-  final int borrowed;
+  final int repair;
   final int alerts;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final dark = colorScheme.brightness == Brightness.dark;
+    final bannerText = dark ? KitoColors.darkBannerText : KitoColors.bannerText;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [KitoColors.primary, KitoColors.gradientGreen],
+        gradient: LinearGradient(
+          colors: dark
+              ? [KitoColors.forestDark, KitoColors.darkGradientGreen]
+              : [KitoColors.primary, KitoColors.gradientGreen],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -217,10 +227,10 @@ class _WelcomeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Prêts pour\nla prochaine aventure ?',
+          Text(
+            'Tout est prêt\npour la prochaine aventure ?',
             style: TextStyle(
-              color: Colors.white,
+              color: bannerText,
               fontSize: 23,
               height: 1.15,
               fontWeight: FontWeight.w800,
@@ -229,9 +239,17 @@ class _WelcomeCard extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              _Stat(label: 'Références', value: '$itemCount'),
-              _Stat(label: 'Disponibles', value: '$available'),
-              _Stat(label: 'Empruntés', value: '$borrowed'),
+              _Stat(
+                label: 'Références',
+                value: '$itemCount',
+                color: bannerText,
+              ),
+              _Stat(
+                label: 'Disponibles',
+                value: '$available',
+                color: bannerText,
+              ),
+              _Stat(label: 'À réparer', value: '$repair', color: bannerText),
             ],
           ),
           if (alerts > 0) ...[
@@ -239,13 +257,13 @@ class _WelcomeCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.14),
+                color: bannerText.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 '⚠  $alerts ${alerts == 1 ? 'stock à surveiller' : 'stocks à surveiller'}',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: bannerText,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -258,9 +276,10 @@ class _WelcomeCard extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value});
+  const _Stat({required this.label, required this.value, required this.color});
   final String label;
   final String value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) => Expanded(
@@ -269,15 +288,15 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: color,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(color: KitoColors.paleTextOnPrimary, fontSize: 11),
+          style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 11),
         ),
       ],
     ),
@@ -288,18 +307,15 @@ class _EquipmentCard extends StatelessWidget {
   const _EquipmentCard({
     required this.item,
     required this.onEdit,
-    required this.onLend,
     required this.onDelete,
   });
 
   final EquipmentItem item;
   final VoidCallback onEdit;
-  final VoidCallback onLend;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final canLend = item.availableQuantity > 0;
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(15, 12, 8, 14),
@@ -311,7 +327,9 @@ class _EquipmentCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: KitoColors.paleGreen,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
@@ -358,7 +376,7 @@ class _EquipmentCard extends StatelessWidget {
             Row(
               children: [
                 _Quantity(label: 'Disponible', value: item.availableQuantity),
-                _Quantity(label: 'Emprunté', value: item.borrowedQuantity),
+                _Quantity(label: 'Bon état', value: item.goodQuantity),
                 _Quantity(label: 'À réparer', value: item.repairQuantity),
                 _Quantity(label: 'Total', value: item.physicalQuantity),
               ],
@@ -368,9 +386,9 @@ class _EquipmentCard extends StatelessWidget {
               Row(
                 children: [
                   if (item.isLowStock)
-                    const Icon(
+                    Icon(
                       Icons.warning_amber_rounded,
-                      color: KitoColors.warning,
+                      color: Theme.of(context).colorScheme.tertiary,
                       size: 17,
                     ),
                   if (item.isLowStock) const SizedBox(width: 4),
@@ -383,7 +401,7 @@ class _EquipmentCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: item.isLowStock
-                            ? KitoColors.warning
+                            ? Theme.of(context).colorScheme.tertiary
                             : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
@@ -392,15 +410,6 @@ class _EquipmentCard extends StatelessWidget {
                 ],
               ),
             ],
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: canLend ? onLend : null,
-                icon: const Icon(Icons.north_east, size: 17),
-                label: Text(canLend ? 'Enregistrer une sortie' : 'Aucun stock disponible'),
-              ),
-            ),
           ],
         ),
       ),
@@ -464,7 +473,11 @@ class _EmptyState extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 42, horizontal: 8),
     child: Column(
       children: [
-        Icon(icon, size: 54, color: KitoColors.textSecondary),
+        Icon(
+          icon,
+          size: 54,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(height: 14),
         Text(
           title,
@@ -496,7 +509,11 @@ class _ErrorState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, size: 44, color: Colors.redAccent),
+          Icon(
+            Icons.error_outline,
+            size: 44,
+            color: Theme.of(context).colorScheme.error,
+          ),
           const SizedBox(height: 12),
           const Text(
             'Impossible de charger l’inventaire',

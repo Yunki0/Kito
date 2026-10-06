@@ -72,16 +72,6 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final availablePhysical =
-        _number(_newController) + _number(_goodController);
-    if (availablePhysical < (widget.item?.borrowedQuantity ?? 0)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Le stock en bon état ne peut pas être inférieur aux emprunts en cours.'),
-        ),
-      );
-      return;
-    }
 
     setState(() => _isSaving = true);
     try {
@@ -98,7 +88,6 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
           lowStockThreshold: _isConsumable ? _number(_thresholdController) : 0,
           isConsumable: _isConsumable,
           notes: _notesController.text.trim(),
-          borrowedQuantity: widget.item?.borrowedQuantity ?? 0,
         ),
       );
       if (mounted) Navigator.pop(context, true);
@@ -184,8 +173,10 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Seuls les articles neufs ou en bon état sont disponibles au prêt.',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              'Les articles neufs et en bon état sont disponibles.',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 12),
             _quantityField(

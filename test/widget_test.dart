@@ -35,7 +35,6 @@ void main() {
         overrides: [
           databaseReadyProvider.overrideWith((ref) async {}),
           equipmentProvider.overrideWith((ref) async => []),
-          movementsProvider.overrideWith((ref) async => []),
           historyProvider.overrideWith((ref) async => []),
         ],
         child: const KitoApp(),
@@ -46,7 +45,31 @@ void main() {
     expect(find.text('Kito'), findsOneWidget);
     expect(find.text('Votre inventaire commence ici'), findsOneWidget);
     expect(find.text('Ajouter du matériel'), findsWidgets);
-    expect(find.text('Emprunts'), findsOneWidget);
+    expect(find.text('Emprunts'), findsNothing);
+    expect(find.text('Enregistrer une sortie'), findsNothing);
+    expect(find.byType(NavigationDestination), findsNWidgets(2));
     expect(find.text('Journal'), findsOneWidget);
+  });
+
+  testWidgets('automatically uses the system dark theme', (tester) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseReadyProvider.overrideWith((ref) async {}),
+          equipmentProvider.overrideWith((ref) async => []),
+          historyProvider.overrideWith((ref) async => []),
+        ],
+        child: const KitoApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final inventoryText = tester.element(
+      find.text('Votre inventaire commence ici'),
+    );
+    expect(Theme.of(inventoryText).brightness, Brightness.dark);
+    expect(find.text('Emprunts'), findsNothing);
   });
 }
