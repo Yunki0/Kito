@@ -42,6 +42,7 @@ dependencies:
   go_router: ^18.0.2
   equatable: ^3.0.0
   sqflite_common_ffi: ^2.4.3
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -92,15 +93,15 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#F8F7EF"
-  image: assets/branding/kito_splash.png
-  ios_content_mode: scaleAspectFill
+  image: assets/branding/kito_splash_mark.png
+  ios_content_mode: scaleAspectFit
   android: true
   ios: true
   web: true
   android_12:
     color: "#F8F7EF"
-    image: assets/branding/kito_icon_foreground.png
-    icon_background_color: "#0F5132"
+    image: assets/branding/kito_splash_mark_android12.png
+    icon_background_color: "#F8F7EF"
 
   # To add assets to your application, add an assets section, like this:
   # assets:

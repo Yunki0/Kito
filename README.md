@@ -6,8 +6,17 @@ SQLite sur l'appareil. Android, iOS, macOS, Linux et Windows sont pris en charge
 
 L'identité visuelle reprend le logo montagne-sapin, le vert forêt (`#0F5132`),
 le vert olive (`#688F58`), l'ambre (`#F5A623`) et l'ivoire (`#F8F7EF`) du visuel
-fourni. L'écran de chargement Flutter utilise le splash illustré de camp en
-plein écran avec un mouvement de zoom très discret.
+fourni. L'écran de démarrage est entièrement vectoriel : symbole Kito centré sur 
+fond ivoire, nom et baseline en fondu, collines en arrière-plan. 
+Le splash natif (flutter_native_splash) affiche le même symbole pour une transition sans saut.
+
+Les sources graphiques sont regroupées dans `assets/branding/`. Les fichiers
+`kito_mark_monochrome.svg` et `kito_mark_monochrome_white.svg` sont les variantes
+monochromes du symbole. Le logo de l'écran de démarrage Flutter est rendu en
+SVG, tandis que les variantes PNG carrées sont utilisées par les écrans de
+démarrage natifs.
+La palette, la typographie et le thème Material sont centralisés dans
+`lib/core/theme/`.
 
 ## Démarrer
 

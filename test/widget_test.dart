@@ -7,7 +7,7 @@ import 'package:kito/app.dart';
 import 'package:kito/features/inventory/presentation/inventory_providers.dart';
 
 void main() {
-  testWidgets('shows branded loading while the local database opens', (
+  testWidgets('shows the branded splash while the local database opens', (
     tester,
   ) async {
     final startup = Completer<void>();
@@ -21,11 +21,11 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('Kito'), findsNothing);
-    expect(find.byType(Image), findsOneWidget);
+    expect(find.byKey(const ValueKey('splash')), findsOneWidget);
+    expect(find.text('Kito'), findsOneWidget);
 
     await tester.pump(const Duration(milliseconds: 800));
-    expect(find.byType(Image), findsOneWidget);
+    expect(find.byKey(const ValueKey('splash')), findsOneWidget);
     startup.complete();
   });
 

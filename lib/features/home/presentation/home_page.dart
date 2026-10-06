@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/branding/kito_brand.dart';
+import '../../../core/theme/kito_colors.dart';
 import '../../inventory/domain/equipment_item.dart';
 import '../../inventory/presentation/equipment_form_page.dart';
 import '../../inventory/presentation/inventory_providers.dart';
@@ -38,17 +39,22 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final startup = ref.watch(databaseReadyProvider);
-    return startup.when(
-      loading: () => const Scaffold(
-        body: KitoLoadingView(message: 'Ouverture de votre matériel…'),
-      ),
-      error: (error, _) => Scaffold(
-        body: _StartupError(
-          error: error,
-          onRetry: () => ref.invalidate(appDatabaseProvider),
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      child: startup.when(
+        loading: () => const KitoSplashView(key: ValueKey('splash')),
+        error: (error, _) => Scaffold(
+          key: const ValueKey('error'),
+          body: _StartupError(
+            error: error,
+            onRetry: () => ref.invalidate(appDatabaseProvider),
+          ),
+        ),
+        data: (_) => KeyedSubtree(
+          key: const ValueKey('home'),
+          child: _buildHome(context),
         ),
       ),
-      data: (_) => _buildHome(context),
     );
   }
 
@@ -128,7 +134,7 @@ class _StartupError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ColoredBox(
-    color: KitoBrand.cream,
+    color: KitoColors.background,
     child: SafeArea(
       child: Center(
         child: Padding(
@@ -147,7 +153,7 @@ class _StartupError extends StatelessWidget {
               Text(
                 '$error',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: KitoBrand.mutedInk),
+                style: const TextStyle(color: KitoColors.textSecondary),
               ),
               const SizedBox(height: 18),
               FilledButton.icon(

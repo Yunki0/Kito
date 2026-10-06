@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/branding/kito_brand.dart';
+import '../../../core/theme/kito_colors.dart';
 import '../../inventory/domain/equipment_item.dart';
 import '../../inventory/presentation/inventory_providers.dart';
 
@@ -28,7 +29,7 @@ class MovementsPage extends ConsumerWidget {
               Icon(
                 Icons.swap_horiz,
                 size: 56,
-                color: KitoBrand.mutedInk,
+                color: KitoColors.textSecondary,
               ),
               SizedBox(height: 16),
               Text(
@@ -165,10 +166,10 @@ class _MovementCard extends StatelessWidget {
             Row(
               children: [
                 const CircleAvatar(
-                  backgroundColor: KitoBrand.paleSage,
+                  backgroundColor: KitoColors.paleGreen,
                   child: Icon(
                     Icons.person_outline,
-                    color: KitoBrand.forest,
+                    color: KitoColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),

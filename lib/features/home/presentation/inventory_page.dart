@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/branding/kito_brand.dart';
+import '../../../core/theme/kito_colors.dart';
 import '../../inventory/domain/equipment_item.dart';
 import '../../inventory/presentation/inventory_providers.dart';
 import 'inventory_actions.dart';
@@ -207,7 +208,7 @@ class _WelcomeCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [KitoBrand.forest, Color(0xFF256444)],
+          colors: [KitoColors.primary, KitoColors.gradientGreen],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -276,7 +277,7 @@ class _Stat extends StatelessWidget {
         ),
         Text(
           label,
-          style: const TextStyle(color: Color(0xFFD9E8DF), fontSize: 11),
+          style: const TextStyle(color: KitoColors.paleTextOnPrimary, fontSize: 11),
         ),
       ],
     ),
@@ -310,7 +311,7 @@ class _EquipmentCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: KitoBrand.paleSage,
+                    color: KitoColors.paleGreen,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
@@ -369,7 +370,7 @@ class _EquipmentCard extends StatelessWidget {
                   if (item.isLowStock)
                     const Icon(
                       Icons.warning_amber_rounded,
-                      color: Color(0xFFB26A14),
+                      color: KitoColors.warning,
                       size: 17,
                     ),
                   if (item.isLowStock) const SizedBox(width: 4),
@@ -382,7 +383,7 @@ class _EquipmentCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: item.isLowStock
-                            ? const Color(0xFF9A5A0B)
+                            ? KitoColors.warning
                             : Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 12,
                       ),
@@ -463,7 +464,7 @@ class _EmptyState extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 42, horizontal: 8),
     child: Column(
       children: [
-        Icon(icon, size: 54, color: KitoBrand.mutedInk),
+        Icon(icon, size: 54, color: KitoColors.textSecondary),
         const SizedBox(height: 14),
         Text(
           title,

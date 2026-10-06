@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <mask id="tree-cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="#fff"/>
+      <path d="M516 397 416 536h61l-74 96h76v118h73V632h76l-74-96h60L516 397Z" fill="#000"/>
+    </mask>
+  </defs>
+  <g fill="#FFFFFF">
+    <circle cx="758" cy="302" r="76"/>
+    <path d="M144 666c119-20 242-7 365 75-104 88-272 79-365-75Z"/>
+    <path d="M506 741c107-83 240-112 374-79-102 162-263 174-374 79Z"/>
+    <path d="M146 676 363 390l83 92 129-215 305 409H146Z" mask="url(#tree-cutout)"/>
+  </g>
+</svg>

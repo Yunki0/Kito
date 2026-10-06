@@ -10,7 +10,10 @@ final appDatabaseProvider = FutureProvider<AppDatabase>(
 );
 
 final databaseReadyProvider = FutureProvider<void>((ref) async {
-  await ref.watch(appDatabaseProvider.future);
+  await Future.wait([
+    ref.watch(appDatabaseProvider.future),
+    Future<void>.delayed(const Duration(milliseconds: 800)),
+  ]);
 });
 
 final inventoryRepositoryProvider = FutureProvider<InventoryRepository>((ref) async {

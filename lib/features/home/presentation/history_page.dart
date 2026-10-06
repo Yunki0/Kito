@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/branding/kito_brand.dart';
+import '../../../core/theme/kito_colors.dart';
 import '../../inventory/presentation/inventory_providers.dart';
 
 class HistoryPage extends ConsumerWidget {
@@ -36,7 +37,11 @@ class HistoryPage extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.history, size: 54, color: KitoBrand.mutedInk),
+                  Icon(
+                    Icons.history,
+                    size: 54,
+                    color: KitoColors.textSecondary,
+                  ),
                   SizedBox(height: 14),
                   Text(
                     'Le journal est encore vide',
@@ -59,7 +64,10 @@ class HistoryPage extends ConsumerWidget {
             children: [
               Text(
                 'Activité récente',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 12),
               ...entries.map(
@@ -67,8 +75,8 @@ class HistoryPage extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: const CircleAvatar(
-                      backgroundColor: KitoBrand.paleSage,
-                      child: Icon(Icons.check, color: KitoBrand.forest),
+                      backgroundColor: KitoColors.paleGreen,
+                      child: Icon(Icons.check, color: KitoColors.primary),
                     ),
                     title: Text(entry.message),
                     subtitle: Text(_formatDate(entry.createdAt)),
