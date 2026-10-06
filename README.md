@@ -101,7 +101,9 @@ La page de téléchargement est publiée sur GitHub Pages à chaque mise à jour
 `pubspec.yaml`, poussez le commit puis créez et poussez un tag correspondant
 (par exemple `v1.0.7`). GitHub Actions construit des APK Android séparés par
 architecture et les joint à la release GitHub. La page propose la dernière
-version disponible.
+version disponible. Les APK actuels sont signés avec la clé Android de
+développement du projet ; une clé de signature de production stable est à
+configurer avant une distribution durable ou une publication sur le Play Store.
 
 La version iOS est définie par le même champ `version` Flutter, mais sa
 distribution sera ajoutée lorsque l’application sera publiée sur l’App Store
