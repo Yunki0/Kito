@@ -105,9 +105,29 @@ version disponible. Les APK actuels sont signés avec la clé Android de
 développement du projet ; une clé de signature de production stable est à
 configurer avant une distribution durable ou une publication sur le Play Store.
 
-La version iOS est définie par le même champ `version` Flutter, mais sa
-distribution sera ajoutée lorsque l’application sera publiée sur l’App Store
-ou TestFlight.
+La version iOS est définie par le même champ `version` Flutter. Sa distribution
+requiert un compte Apple Developer et une publication via TestFlight ou l’App
+Store.
+
+### Signature Android de production
+
+La signature de production utilise un keystore privé conservé hors du dépôt.
+Gradle lit ses paramètres dans `android/key.properties`, fichier ignoré par
+Git ; le workflow GitHub Actions recrée temporairement ce fichier à partir des
+secrets du dépôt `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS` et `ANDROID_KEY_PASSWORD`. Les builds release échouent
+explicitement si cette configuration est absente, plutôt que d’utiliser la
+clé de développement.
+
+La clé est conservée localement sous `~/.keys/kito-release.jks`. Garde une
+copie de secours sécurisée du keystore et de ses mots de passe : leur perte
+empêcherait de signer les futures mises à jour.
+
+La v1.0.7 est la première version signée avec cette nouvelle clé. Avant de
+l'installer par-dessus la v1.0.6, exportez une sauvegarde JSON depuis Kito,
+désinstallez la v1.0.6, installez la v1.0.7, puis restaurez la sauvegarde.
+Cette réinstallation unique est nécessaire parce que la v1.0.6 a été signée
+avec la clé de développement.
 
 Les données restent sur l'appareil : aucune synchronisation ni sauvegarde cloud
 n'est actuellement configurée. La suppression des données de l'application
