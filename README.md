@@ -105,9 +105,13 @@ version disponible. Les APK actuels sont signés avec la clé Android de
 développement du projet ; une clé de signature de production stable est à
 configurer avant une distribution durable ou une publication sur le Play Store.
 
-La version iOS est définie par le même champ `version` Flutter. Sa distribution
-requiert un compte Apple Developer et une publication via TestFlight ou l’App
-Store.
+Le projet Flutter inclut déjà la cible iOS et reprend la version `1.0.7 (8)`.
+La compilation iOS et l’installation sur un iPhone nécessitent un Mac équipé
+de Xcode. La distribution à d'autres utilisateurs via TestFlight ou l’App
+Store nécessite en plus un abonnement Apple Developer actif et la configuration
+des certificats et profils de signature Apple. L'environnement actuel étant
+Linux et aucun compte Apple Developer n'étant encore configuré, aucun IPA
+installable ne peut être publié pour le moment.
 
 ### Signature Android de production
 
