@@ -85,6 +85,12 @@
       .platform h3 { margin: 0 0 4px; }
       .platform p { margin: 0; color: var(--muted); font-size: .92rem; }
       .status { display: inline-block; margin-top: 10px; padding: 4px 9px; border-radius: 999px; background: #f4ead2; color: #785217; font-size: .75rem; font-weight: 750; }
+      .web-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--forest); font-weight: 800; text-decoration: none; }
+      .web-link:hover { text-decoration: underline; }
+      .install-guide { margin-top: 58px; padding: clamp(24px, 5vw, 42px); border-radius: 24px; background: var(--sage); }
+      .install-guide .eyebrow { color: var(--forest); }
+      .install-guide h2 { margin: 10px 0 18px; font-size: clamp(1.45rem, 4vw, 2rem); letter-spacing: -.04em; }
+      .install-guide ol { display: grid; gap: 11px; margin: 0; padding-left: 22px; color: #3d5145; }
       details { margin-top: 16px; color: var(--muted); font-size: .92rem; }
       summary { cursor: pointer; color: var(--forest); font-weight: 700; }
       details a { display: inline-block; margin: 10px 12px 0 0; color: var(--forest); }
@@ -119,7 +125,7 @@
       <section class="hero">
         <div class="eyebrow">Le matériel scout, en toute simplicité</div>
         <h1>Tout votre matériel.<br>Prêt pour l’aventure.</h1>
-        <p>Inventoriez, vérifiez les stocks et gardez une trace des changements. Kito fonctionne hors ligne et conserve vos données sur votre appareil.</p>
+        <p>Inventoriez, vérifiez les stocks et gardez une trace des changements. Sur le Web, votre inventaire reste dans le navigateur de cet appareil.</p>
         <a class="download" href="https://github.com/Yunki0/Kito/releases/latest/download/app-arm64-v8a-release.apk">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -175,10 +181,21 @@
           </div>
           <div>
             <h3>iPhone et iPad</h3>
-            <p>La version iOS est en préparation. Elle sera proposée via TestFlight ou l’App Store après configuration de la signature Apple.</p>
-            <span class="status">Bientôt disponible</span>
+            <p>Utilisez Kito dans Safari sans installer d’application depuis l’App Store.</p>
+            <a class="web-link" href="/Kito/app/">Ouvrir Kito sur le Web <span aria-hidden="true">→</span></a>
           </div>
         </article>
+      </section>
+
+      <section class="install-guide">
+        <div class="eyebrow">En quelques secondes</div>
+        <h2>Ajouter Kito à l’écran d’accueil de l’iPhone</h2>
+        <ol>
+          <li>Ouvre Kito sur le Web dans <strong>Safari</strong>.</li>
+          <li>Touche le bouton <strong>Partager</strong> (le carré avec la flèche vers le haut).</li>
+          <li>Choisis <strong>Sur l’écran d’accueil</strong>, puis touche <strong>Ajouter</strong>.</li>
+        </ol>
+        <p class="notice">Chaque appareil possède son propre inventaire : les données ne sont pas partagées ni synchronisées. Elles restent dans le stockage du navigateur. Une connexion Internet est nécessaire pour charger l’application Web. Utilise régulièrement l’option de sauvegarde dans Kito et garde le fichier JSON dans un emplacement sûr. Effacer les données de Safari peut supprimer l’inventaire local.</p>
       </section>
 
       <p class="notice">Android peut demander l’autorisation d’installer une application téléchargée depuis le navigateur. La version actuellement téléchargeable est la v1.0.6, signée avec l’ancienne clé. La v1.0.7 signée avec la clé de production est en cours de publication. N’installez pas encore une mise à jour nécessitant une désinstallation : faites d’abord une sauvegarde de vos données dans Kito. La page proposera la nouvelle version dès que sa publication sera terminée.</p>

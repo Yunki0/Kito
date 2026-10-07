@@ -3,8 +3,13 @@
 Téléchargement Android : https://yunki0.github.io/Kito/
 
 Kito est une application Flutter en français pour gérer l'inventaire matériel
-d'une unité scoute, même hors ligne. Les données sont enregistrées localement dans une base
-SQLite sur l'appareil. Android, iOS, macOS, Linux et Windows sont pris en charge.
+d'une unité scoute. Les apps natives fonctionnent hors ligne ; la version Web
+nécessite une connexion pour charger son interface. Les données sont
+enregistrées localement dans une base SQLite sur l'appareil ou dans le
+navigateur. Android, le Web, macOS, Linux et Windows sont pris en charge.
+Sur iPhone et iPad, Kito fonctionne comme une application web progressive (PWA)
+ajoutable à l’écran d’accueil depuis Safari ; aucun compte développeur Apple
+n’est nécessaire.
 L'application suit automatiquement le thème clair ou sombre du système.
 
 L'identité visuelle reprend le logo montagne-sapin, le vert forêt (`#0F5132`),
@@ -84,34 +89,37 @@ les articles neufs ou en bon état sont considérés disponibles. Dans une fiche
 - Journal local des ajouts, modifications et suppressions.
 - Sauvegarde et restauration locale de l'inventaire et du journal.
 - Export de l'inventaire en PDF ou CSV.
+- Application web installable sur iPhone, iPad et ordinateur.
 
 Les fiches supprimées restent consignées dans le journal.
+La version Web conserve chaque inventaire dans IndexedDB du navigateur :
+les appareils ne partagent ni ne synchronisent leurs données. Les données du
+navigateur peuvent être effacées par l'utilisateur ou le système ; exportez
+régulièrement une sauvegarde JSON.
 
 ## Vérification
 
 ```sh
 flutter analyze
 flutter test
+flutter build web --release --base-href /Kito/app/
 ```
 
 ## Publication Android
 
-La page de téléchargement est publiée sur GitHub Pages à chaque mise à jour de
-`main`. Pour créer une nouvelle version Android, incrémentez `version` dans
-`pubspec.yaml`, poussez le commit puis créez et poussez un tag correspondant
-(par exemple `v1.0.7`). GitHub Actions construit des APK Android séparés par
-architecture et les joint à la release GitHub. La page propose la dernière
-version disponible. Les APK actuels sont signés avec la clé Android de
-développement du projet ; une clé de signature de production stable est à
-configurer avant une distribution durable ou une publication sur le Play Store.
+La page de téléchargement et la PWA sont publiées sur GitHub Pages par GitHub
+Actions à chaque mise à jour pertinente de `main`. L’application Web est
+déployée sous `/Kito/app/` et utilise SQLite WASM avec persistance IndexedDB.
+Sur iPhone, ouvrez la page Kito dans Safari, touchez **Partager**, puis
+**Sur l’écran d’accueil** et **Ajouter**.
 
-Le projet Flutter inclut déjà la cible iOS et reprend la version `1.0.7 (8)`.
-La compilation iOS et l’installation sur un iPhone nécessitent un Mac équipé
-de Xcode. La distribution à d'autres utilisateurs via TestFlight ou l’App
-Store nécessite en plus un abonnement Apple Developer actif et la configuration
-des certificats et profils de signature Apple. L'environnement actuel étant
-Linux et aucun compte Apple Developer n'étant encore configuré, aucun IPA
-installable ne peut être publié pour le moment.
+Pour distribuer une application iOS native via TestFlight ou l’App Store, il
+faut toujours un Mac équipé de Xcode et un abonnement Apple Developer ; la PWA
+permet aux utilisateurs d’iPhone d’utiliser Kito sans cette distribution native.
+
+Pour créer une nouvelle version Android, incrémentez `version` dans
+`pubspec.yaml`, poussez le commit puis créez et poussez un tag correspondant.
+GitHub Actions construit des APK Android séparés par architecture.
 
 ### Signature Android de production
 
@@ -133,9 +141,8 @@ désinstallez la v1.0.6, installez la v1.0.7, puis restaurez la sauvegarde.
 Cette réinstallation unique est nécessaire parce que la v1.0.6 a été signée
 avec la clé de développement.
 
-Les données restent sur l'appareil : aucune synchronisation ni sauvegarde cloud
-n'est actuellement configurée. La suppression des données de l'application
-efface également sa base locale.
+Les données restent sur l’appareil ou dans le stockage du navigateur : aucune
+synchronisation ni sauvegarde cloud n’est actuellement configurée.
 
 ## Régénérer l'icône et l'écran de démarrage
 

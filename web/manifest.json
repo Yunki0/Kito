@@ -1,11 +1,12 @@
 {
     "name": "Kito — Matériel scout",
     "short_name": "Kito",
-    "start_url": ".",
+    "start_url": "/Kito/app/",
+    "scope": "/Kito/app/",
     "display": "standalone",
     "background_color": "#F8F7EF",
     "theme_color": "#0F5132",
-    "description": "Gérez le matériel de votre unité scout et suivez les emprunts, même hors ligne.",
+    "description": "Gérez l’inventaire de votre unité scoute. Les données restent dans ce navigateur.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
