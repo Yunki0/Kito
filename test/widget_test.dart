@@ -72,4 +72,23 @@ void main() {
     expect(Theme.of(inventoryText).brightness, Brightness.dark);
     expect(find.text('Emprunts'), findsNothing);
   });
+
+  testWidgets('offers sharing a backup from the actions menu', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseReadyProvider.overrideWith((ref) async {}),
+          equipmentProvider.overrideWith((ref) async => []),
+          historyProvider.overrideWith((ref) async => []),
+        ],
+        child: const KitoApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(PopupMenuButton<String>));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Partager une sauvegarde'), findsOneWidget);
+  });
 }

@@ -61,4 +61,4 @@ jobs:
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk \
             build/app/outputs/flutter-apk/app-x86_64-release.apk \
             --title "Kito $GITHUB_REF_NAME" \
-            --notes "Téléchargez l’APK correspondant à l’architecture de votre appareil Android. La plupart des téléphones récents utilisent ARM64."
+            --notes "Nouveauté : partage manuel d’une sauvegarde complète pour transmettre l’inventaire à d’autres appareils Kito. La restauration remplace les données locales et ne synchronise pas les appareils. Téléchargez l’APK correspondant à l’architecture de votre appareil Android ; la plupart des téléphones récents utilisent ARM64."

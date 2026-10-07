@@ -30,7 +30,10 @@ La palette, la typographie et le thème Material sont centralisés dans
 Les données peuvent être exportées dans un fichier JSON depuis le menu de
 l'application, puis restaurées sur cet appareil ou un autre. La restauration
 remplace l'inventaire et le journal après confirmation. Conservez vos
-sauvegardes dans un emplacement sûr.
+sauvegardes dans un emplacement sûr. **Partager une sauvegarde** ouvre le menu
+de partage du téléphone afin de l'envoyer à d'autres utilisateurs Kito.
+Ce partage est manuel : il ne synchronise pas les appareils. Chaque destinataire
+doit restaurer le fichier, ce qui remplace ses données locales.
 Le même menu permet d'exporter l'inventaire en PDF, avec un résumé des stocks
 et un tableau adapté à l'impression, ou en CSV pour l'ouvrir dans un tableur.
 Lors de la mise à jour, les éventuels prêts en cours sont considérés comme
@@ -88,6 +91,7 @@ les articles neufs ou en bon état sont considérés disponibles. Dans une fiche
 - Indicateurs de stock disponible, à réparer et hors service.
 - Journal local des ajouts, modifications et suppressions.
 - Sauvegarde et restauration locale de l'inventaire et du journal.
+- Partage manuel d'une sauvegarde complète entre appareils.
 - Export de l'inventaire en PDF ou CSV.
 - Application web installable sur iPhone, iPad et ordinateur.
 
@@ -141,6 +145,10 @@ l'installer par-dessus la v1.0.6, exportez une sauvegarde JSON depuis Kito,
 désinstallez la v1.0.6, installez la v1.0.7, puis restaurez la sauvegarde.
 Cette réinstallation unique est nécessaire parce que la v1.0.6 a été signée
 avec la clé de développement.
+
+La version `1.0.8 (9)` ajoute le partage manuel des sauvegardes. Elle conserve
+la même clé de production que la v1.0.7 et peut donc être installée directement
+par-dessus celle-ci.
 
 Les données restent sur l’appareil ou dans le stockage du navigateur : aucune
 synchronisation ni sauvegarde cloud n’est actuellement configurée.

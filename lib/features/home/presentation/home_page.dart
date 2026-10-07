@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/branding/kito_brand.dart';
 import '../../../core/database/inventory_backup_service.dart';
@@ -41,7 +43,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       final database = await ref.read(appDatabaseProvider.future);
       final bytes = await InventoryBackupService(database).createBackup();
       final savedFile = await FilePicker.saveFile(
-        fileName: 'kito-sauvegarde-${DateTime.now().toIso8601String().substring(0, 10)}.json',
+        fileName:
+            'kito-sauvegarde-${DateTime.now().toIso8601String().substring(0, 10)}.json',
         bytes: bytes,
         mimeType: 'application/json',
         type: FileType.custom,
@@ -49,13 +52,64 @@ class _HomePageState extends ConsumerState<HomePage> {
         dialogTitle: 'Enregistrer une sauvegarde Kito',
       );
       if (savedFile == null || !mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sauvegarde enregistrée.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sauvegarde enregistrée.')));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Création de la sauvegarde impossible : $error')),
+        SnackBar(
+          content: Text('Création de la sauvegarde impossible : $error'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _shareBackup() async {
+    try {
+      final database = await ref.read(appDatabaseProvider.future);
+      final bytes = await InventoryBackupService(database).createBackup();
+      final date = DateTime.now().toIso8601String().substring(0, 10);
+      final fileName = 'kito-sauvegarde-$date.json';
+
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.linux) {
+        final savedFile = await FilePicker.saveFile(
+          fileName: fileName,
+          bytes: bytes,
+          mimeType: 'application/json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+          dialogTitle: 'Enregistrer la sauvegarde à partager',
+        );
+        if (savedFile == null || !mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Sauvegarde enregistrée. Tu peux maintenant la partager.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(bytes, mimeType: 'application/json', name: fileName),
+          ],
+          fileNameOverrides: [fileName],
+          title: 'Partager la sauvegarde Kito',
+          text: 'Sauvegarde Kito du $date',
+        ),
+      );
+      if (!mounted || result.status == ShareResultStatus.dismissed) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Menu de partage ouvert.')));
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Partage de la sauvegarde impossible : $error')),
       );
     }
   }
@@ -83,9 +137,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            asPdf
-                ? 'Inventaire PDF exporté.'
-                : 'Inventaire CSV exporté.',
+            asPdf ? 'Inventaire PDF exporté.' : 'Inventaire CSV exporté.',
           ),
         ),
       );
@@ -130,9 +182,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       );
       if (confirmed != true || !mounted) return;
       final database = await ref.read(appDatabaseProvider.future);
-      final count = await InventoryBackupService(
-        database,
-      ).restoreBackup(bytes);
+      final count = await InventoryBackupService(database).restoreBackup(bytes);
       _refreshData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -209,60 +259,69 @@ class _HomePageState extends ConsumerState<HomePage> {
                 icon: const Icon(Icons.add),
               ),
             ),
-            PopupMenuButton<String>(
-              tooltip: 'Exports, sauvegarde et apparence',
-              onSelected: (action) {
-                if (action == 'backup') _createBackup();
-                if (action == 'restore') _restoreBackup();
-                if (action == 'export_pdf') _exportInventory(asPdf: true);
-                if (action == 'export_csv') _exportInventory(asPdf: false);
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: 'export_pdf',
-                  child: ListTile(
-                    leading: Icon(Icons.picture_as_pdf_outlined),
-                    title: Text('Exporter en PDF'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+          PopupMenuButton<String>(
+            tooltip: 'Exports, sauvegarde et apparence',
+            onSelected: (action) {
+              if (action == 'backup') _createBackup();
+              if (action == 'share_backup') _shareBackup();
+              if (action == 'restore') _restoreBackup();
+              if (action == 'export_pdf') _exportInventory(asPdf: true);
+              if (action == 'export_csv') _exportInventory(asPdf: false);
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'export_pdf',
+                child: ListTile(
+                  leading: Icon(Icons.picture_as_pdf_outlined),
+                  title: Text('Exporter en PDF'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                PopupMenuItem(
-                  value: 'export_csv',
-                  child: ListTile(
-                    leading: Icon(Icons.table_chart_outlined),
-                    title: Text('Exporter en CSV'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+              ),
+              PopupMenuItem(
+                value: 'export_csv',
+                child: ListTile(
+                  leading: Icon(Icons.table_chart_outlined),
+                  title: Text('Exporter en CSV'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                PopupMenuDivider(),
-                PopupMenuItem(
-                  value: 'backup',
-                  child: ListTile(
-                    leading: Icon(Icons.backup_outlined),
-                    title: Text('Créer une sauvegarde'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+              ),
+              PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'backup',
+                child: ListTile(
+                  leading: Icon(Icons.backup_outlined),
+                  title: Text('Créer une sauvegarde'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                PopupMenuItem(
-                  value: 'restore',
-                  child: ListTile(
-                    leading: Icon(Icons.settings_backup_restore),
-                    title: Text('Restaurer une sauvegarde'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+              ),
+              PopupMenuItem(
+                value: 'share_backup',
+                child: ListTile(
+                  leading: Icon(Icons.share_outlined),
+                  title: Text('Partager une sauvegarde'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                PopupMenuDivider(),
-                PopupMenuItem<String>(
-                  enabled: false,
-                  child: ListTile(
-                    leading: Icon(Icons.brightness_6_outlined),
-                    title: Text('Thème du système'),
-                    subtitle: Text('Clair ou sombre automatiquement'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
+              ),
+              PopupMenuItem(
+                value: 'restore',
+                child: ListTile(
+                  leading: Icon(Icons.settings_backup_restore),
+                  title: Text('Restaurer une sauvegarde'),
+                  contentPadding: EdgeInsets.zero,
                 ),
-              ],
-            ),
+              ),
+              PopupMenuDivider(),
+              PopupMenuItem<String>(
+                enabled: false,
+                child: ListTile(
+                  leading: Icon(Icons.brightness_6_outlined),
+                  title: Text('Thème du système'),
+                  subtitle: Text('Clair ou sombre automatiquement'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: IndexedStack(index: _selectedIndex, children: pages),
@@ -276,10 +335,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             selectedIcon: Icon(Icons.inventory_2),
             label: 'Matériel',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.history),
-            label: 'Journal',
-          ),
+          NavigationDestination(icon: Icon(Icons.history), label: 'Journal'),
         ],
       ),
     );
