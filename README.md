@@ -118,7 +118,8 @@ faut toujours un Mac équipé de Xcode et un abonnement Apple Developer ; la PWA
 permet aux utilisateurs d’iPhone d’utiliser Kito sans cette distribution native.
 
 Pour créer une nouvelle version Android, incrémentez `version` dans
-`pubspec.yaml`, poussez le commit puis créez et poussez un tag correspondant.
+`pubspec.yaml`, poussez le commit puis créez et poussez un tag correspondant
+(par exemple `v1.0.8`).
 GitHub Actions construit des APK Android séparés par architecture.
 
 ### Signature Android de production
