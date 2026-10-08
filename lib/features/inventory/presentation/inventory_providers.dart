@@ -24,7 +24,3 @@ final inventoryRepositoryProvider = FutureProvider<InventoryRepository>((ref) as
 final equipmentProvider = FutureProvider<List<EquipmentItem>>((ref) async {
   return (await ref.watch(inventoryRepositoryProvider.future)).getEquipment();
 });
-
-final historyProvider = FutureProvider<List<ActivityEntry>>((ref) async {
-  return (await ref.watch(inventoryRepositoryProvider.future)).getHistory();
-});

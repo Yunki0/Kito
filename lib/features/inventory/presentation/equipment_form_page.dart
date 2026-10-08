@@ -34,7 +34,9 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
     _categoryController = TextEditingController(text: item?.category ?? '');
     _newController = TextEditingController(text: '${item?.newQuantity ?? 0}');
     _goodController = TextEditingController(text: '${item?.goodQuantity ?? 0}');
-    _repairController = TextEditingController(text: '${item?.repairQuantity ?? 0}');
+    _repairController = TextEditingController(
+      text: '${item?.repairQuantity ?? 0}',
+    );
     _unusableController = TextEditingController(
       text: '${item?.unusableQuantity ?? 0}',
     );
@@ -117,14 +119,33 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.item?.id.isNotEmpty == true
-            ? 'Modifier le matériel'
-            : 'Ajouter du matériel'),
+        title: Text(
+          widget.item?.id.isNotEmpty == true
+              ? 'Modifier le matériel'
+              : 'Ajouter du matériel',
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
+          child: FilledButton.icon(
+            onPressed: _isSaving ? null : _save,
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.check),
+            label: Text(_isSaving ? 'Enregistrement…' : 'Enregistrer'),
+          ),
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             const Text(
               'Identification',
@@ -140,13 +161,15 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
                 hintText: 'Ex. Tente 3 places',
                 prefixIcon: Icon(Icons.backpack_outlined),
               ),
+              textInputAction: TextInputAction.next,
               validator: (value) => value == null || value.trim().isEmpty
                   ? 'Le nom est obligatoire.'
                   : null,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              initialValue: existingCategories.contains(_categoryController.text)
+              initialValue:
+                  existingCategories.contains(_categoryController.text)
                   ? _categoryController.text
                   : null,
               decoration: const InputDecoration(
@@ -155,10 +178,12 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
               ),
               hint: const Text('Choisir une catégorie'),
               items: existingCategories
-                  .map((category) => DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
-                      ))
+                  .map(
+                    (category) => DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) {
                 if (value != null) _categoryController.text = value;
@@ -179,28 +204,44 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
               ),
             ),
             const SizedBox(height: 12),
-            _quantityField(
-              controller: _newController,
-              label: 'Neuf',
-              icon: Icons.auto_awesome_outlined,
+            Row(
+              children: [
+                Expanded(
+                  child: _quantityField(
+                    controller: _newController,
+                    label: 'Neuf',
+                    icon: Icons.auto_awesome_outlined,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _quantityField(
+                    controller: _goodController,
+                    label: 'Bon état',
+                    icon: Icons.check_circle_outline,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
-            _quantityField(
-              controller: _goodController,
-              label: 'Bon état',
-              icon: Icons.check_circle_outline,
-            ),
-            const SizedBox(height: 10),
-            _quantityField(
-              controller: _repairController,
-              label: 'À réparer',
-              icon: Icons.build_outlined,
-            ),
-            const SizedBox(height: 10),
-            _quantityField(
-              controller: _unusableController,
-              label: 'Hors service',
-              icon: Icons.do_not_disturb_alt_outlined,
+            Row(
+              children: [
+                Expanded(
+                  child: _quantityField(
+                    controller: _repairController,
+                    label: 'À réparer',
+                    icon: Icons.build_outlined,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _quantityField(
+                    controller: _unusableController,
+                    label: 'Hors service',
+                    icon: Icons.do_not_disturb_alt_outlined,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             SwitchListTile(
@@ -211,7 +252,9 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
                 'Consommable',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
-              subtitle: const Text('Afficher une alerte lorsque le stock est bas'),
+              subtitle: const Text(
+                'Afficher une alerte lorsque le stock est bas',
+              ),
             ),
             if (_isConsumable) ...[
               const SizedBox(height: 8),
@@ -234,21 +277,7 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
                 prefixIcon: Icon(Icons.notes),
               ),
             ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 52,
-              child: FilledButton.icon(
-                onPressed: _isSaving ? null : _save,
-                icon: _isSaving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check),
-                label: Text(_isSaving ? 'Enregistrement…' : 'Enregistrer'),
-              ),
-            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -259,14 +288,10 @@ class _EquipmentFormPageState extends ConsumerState<EquipmentFormPage> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-  }) =>
-      TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-        ),
-        validator: _validateQuantity,
-      );
+  }) => TextFormField(
+    controller: controller,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
+    validator: _validateQuantity,
+  );
 }

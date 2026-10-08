@@ -15,8 +15,7 @@ Future<void> confirmDeleteEquipment({
     builder: (dialogContext) => AlertDialog(
       title: const Text('Supprimer cette fiche ?'),
       content: Text(
-        '« ${item.name} » et sa fiche seront supprimés de l’inventaire. '
-        'Son historique restera dans le journal.',
+        '« ${item.name} » et sa fiche seront supprimés de l’inventaire.',
       ),
       actions: [
         TextButton(

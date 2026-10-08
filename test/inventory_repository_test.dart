@@ -25,25 +25,17 @@ void main() {
       expect(savedItem.physicalQuantity, 6);
       expect(savedItem.availableQuantity, 5);
       expect(savedItem.repairQuantity, 1);
-      expect(await repository.getHistory(), hasLength(1));
     },
   );
 
-  test(
-    'deletes equipment and records the change in activity history',
-    () async {
-      await repository.saveEquipment(_item());
-      final savedItem = (await repository.getEquipment()).single;
+  test('deletes equipment without requiring an activity log', () async {
+    await repository.saveEquipment(_item());
+    final savedItem = (await repository.getEquipment()).single;
 
-      await repository.deleteEquipment(savedItem.id);
+    await repository.deleteEquipment(savedItem.id);
 
-      expect(await repository.getEquipment(), isEmpty);
-      expect(
-        (await repository.getHistory()).map((entry) => entry.message),
-        contains('Matériel supprimé : Tente'),
-      );
-    },
-  );
+    expect(await repository.getEquipment(), isEmpty);
+  });
 }
 
 EquipmentItem _item() => const EquipmentItem(

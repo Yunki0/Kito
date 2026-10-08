@@ -10,7 +10,6 @@ import '../../../core/export/inventory_export_service.dart';
 import '../../inventory/domain/equipment_item.dart';
 import '../../inventory/presentation/equipment_form_page.dart';
 import '../../inventory/presentation/inventory_providers.dart';
-import 'history_page.dart';
 import 'inventory_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -21,15 +20,7 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  int _selectedIndex = 0;
-
-  static const _titles = ['Mon matériel', 'Historique'];
-
-  void _refreshData() {
-    ref
-      ..invalidate(equipmentProvider)
-      ..invalidate(historyProvider);
-  }
+  void _refreshData() => ref.invalidate(equipmentProvider);
 
   Future<void> _openEquipmentForm([EquipmentItem? item]) async {
     final result = await Navigator.of(context).push<bool>(
@@ -159,14 +150,27 @@ class _HomePageState extends ConsumerState<HomePage> {
       if (selection == null || !mounted) return;
       final bytes = await selection.readAsBytes();
       if (!mounted) return;
+      final database = await ref.read(appDatabaseProvider.future);
+      if (!mounted) return;
+      final backupService = InventoryBackupService(database);
+      final preview = backupService.previewBackup(bytes);
+      final equipmentLabel = preview.equipmentCount == 1
+          ? 'fiche matériel'
+          : 'fiches matériel';
+      final backupDate = preview.createdAt == null
+          ? 'Date inconnue'
+          : 'Créée le ${_formatBackupDate(preview.createdAt!)}';
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Remplacer les données ?'),
-          content: const Text(
-            'La sauvegarde remplacera tout le matériel et le journal actuels. '
-            'Cette opération ne peut pas être annulée. Faites une sauvegarde '
-            'des données actuelles avant de continuer.',
+          title: const Text('Vérifier la sauvegarde'),
+          content: Text(
+            '$backupDate\n'
+            '${preview.equipmentCount} $equipmentLabel.\n\n'
+            'La restauration remplacera tout le matériel actuel. '
+            'Avant de continuer, Kito te proposera d’enregistrer une copie de '
+            'tes données actuelles. Aucune donnée ne sera remplacée si cette '
+            'copie ne peut pas être enregistrée.',
           ),
           actions: [
             TextButton(
@@ -175,14 +179,39 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Remplacer'),
+              child: const Text('Continuer'),
             ),
           ],
         ),
       );
       if (confirmed != true || !mounted) return;
-      final database = await ref.read(appDatabaseProvider.future);
-      final count = await InventoryBackupService(database).restoreBackup(bytes);
+
+      final currentBackup = await backupService.createBackup();
+      if (backupService.previewBackup(currentBackup).equipmentCount > 0) {
+        final date = DateTime.now().toIso8601String().substring(0, 10);
+        final savedFile = await FilePicker.saveFile(
+          fileName: 'kito-avant-restauration-$date.json',
+          bytes: currentBackup,
+          mimeType: 'application/json',
+          type: FileType.custom,
+          allowedExtensions: ['json'],
+          dialogTitle: 'Sauvegarder les données actuelles avant restauration',
+        );
+        if (savedFile == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Restauration annulée : la sauvegarde préalable n’a pas été enregistrée.',
+                ),
+              ),
+            );
+          }
+          return;
+        }
+      }
+
+      final count = await backupService.restoreBackup(bytes);
       _refreshData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -196,6 +225,9 @@ class _HomePageState extends ConsumerState<HomePage> {
       );
     }
   }
+
+  String _formatBackupDate(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
 
   @override
   Widget build(BuildContext context) {
@@ -220,10 +252,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildHome(BuildContext context) {
-    final pages = [
-      InventoryPage(onEdit: _openEquipmentForm, onChanged: _refreshData),
-      const HistoryPage(),
-    ];
     return Scaffold(
       appBar: AppBar(
         titleSpacing: 20,
@@ -239,7 +267,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19),
                 ),
                 Text(
-                  _titles[_selectedIndex],
+                  'Mon matériel',
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -250,15 +278,14 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
         actions: [
-          if (_selectedIndex == 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: IconButton.filledTonal(
-                tooltip: 'Ajouter du matériel',
-                onPressed: _openEquipmentForm,
-                icon: const Icon(Icons.add),
-              ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton.filledTonal(
+              tooltip: 'Ajouter du matériel',
+              onPressed: _openEquipmentForm,
+              icon: const Icon(Icons.add),
             ),
+          ),
           PopupMenuButton<String>(
             tooltip: 'Exports, sauvegarde et apparence',
             onSelected: (action) {
@@ -324,20 +351,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-      body: IndexedStack(index: _selectedIndex, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) =>
-            setState(() => _selectedIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2),
-            label: 'Matériel',
-          ),
-          NavigationDestination(icon: Icon(Icons.history), label: 'Journal'),
-        ],
-      ),
+      body: InventoryPage(onEdit: _openEquipmentForm, onChanged: _refreshData),
     );
   }
 }

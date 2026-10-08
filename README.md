@@ -29,15 +29,15 @@ La palette, la typographie et le thème Material sont centralisés dans
 
 Les données peuvent être exportées dans un fichier JSON depuis le menu de
 l'application, puis restaurées sur cet appareil ou un autre. La restauration
-remplace l'inventaire et le journal après confirmation. Conservez vos
+remplace l'inventaire après confirmation. Conservez vos
 sauvegardes dans un emplacement sûr. **Partager une sauvegarde** ouvre le menu
 de partage du téléphone afin de l'envoyer à d'autres utilisateurs Kito.
 Ce partage est manuel : il ne synchronise pas les appareils. Chaque destinataire
 doit restaurer le fichier, ce qui remplace ses données locales.
 Le même menu permet d'exporter l'inventaire en PDF, avec un résumé des stocks
 et un tableau adapté à l'impression, ou en CSV pour l'ouvrir dans un tableur.
-Lors de la mise à jour, les éventuels prêts en cours sont considérés comme
-rendus ; leur historique d'activité reste consultable.
+Les anciennes sauvegardes contenant un journal restent restaurables, mais les
+entrées du journal ne sont plus conservées.
 
 ## Démarrer
 
@@ -87,15 +87,18 @@ les articles neufs ou en bon état sont considérés disponibles. Dans une fiche
 ## Fonctionnalités
 
 - Inventaire consultable, recherche et filtres par catégorie / stock bas.
+- Tableau de bord avec les quantités disponibles, à réparer, hors service et
+  les alertes de stock bas.
 - Création, modification et suppression des fiches de matériel.
 - Indicateurs de stock disponible, à réparer et hors service.
-- Journal local des ajouts, modifications et suppressions.
-- Sauvegarde et restauration locale de l'inventaire et du journal.
+- Sauvegarde et restauration locale de l'inventaire.
+- Aperçu du contenu d'une sauvegarde et copie préalable des données actuelles
+  avant leur remplacement ; annuler l'enregistrement de cette copie annule
+  aussi la restauration.
 - Partage manuel d'une sauvegarde complète entre appareils.
 - Export de l'inventaire en PDF ou CSV.
 - Application web installable sur iPhone, iPad et ordinateur.
 
-Les fiches supprimées restent consignées dans le journal.
 La version Web conserve chaque inventaire dans IndexedDB du navigateur :
 les appareils ne partagent ni ne synchronisent leurs données. Les données du
 navigateur peuvent être effacées par l'utilisateur ou le système ; exportez

@@ -42,15 +42,3 @@ class EquipmentItem {
     EquipmentCondition.unusable => unusableQuantity,
   };
 }
-
-class ActivityEntry {
-  const ActivityEntry({
-    required this.id,
-    required this.message,
-    required this.createdAt,
-  });
-
-  final String id;
-  final String message;
-  final DateTime createdAt;
-}

@@ -65,18 +65,29 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
           0,
           (total, item) => total + item.repairQuantity,
         );
+        final unusable = items.fold<int>(
+          0,
+          (total, item) => total + item.unusableQuantity,
+        );
         final alerts = items.where((item) => item.isLowStock).length;
 
         return RefreshIndicator(
           onRefresh: () async => ref.invalidate(equipmentProvider),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-            children: [
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 840),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                children: [
               _WelcomeCard(
                 itemCount: items.length,
                 available: available,
                 repair: repair,
+                unusable: unusable,
                 alerts: alerts,
+                onShowAlerts: alerts == 0
+                    ? null
+                    : () => setState(() => _lowStockOnly = true),
               ),
               const SizedBox(height: 22),
               Row(
@@ -166,9 +177,33 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                   ),
                 )
               else if (visible.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 50),
-                  child: Center(child: Text('Aucun matériel ne correspond.')),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 42),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.search_off_outlined,
+                          size: 42,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Aucun matériel ne correspond',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => setState(() {
+                            _searchController.clear();
+                            _category = 'Tout';
+                            _lowStockOnly = false;
+                          }),
+                          child: const Text('Effacer les filtres'),
+                        ),
+                      ],
+                    ),
+                  ),
                 )
               else
                 ...visible.map(
@@ -186,7 +221,9 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
                     ),
                   ),
                 ),
-            ],
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -199,13 +236,17 @@ class _WelcomeCard extends StatelessWidget {
     required this.itemCount,
     required this.available,
     required this.repair,
+    required this.unusable,
     required this.alerts,
+    required this.onShowAlerts,
   });
 
   final int itemCount;
   final int available;
   final int repair;
+  final int unusable;
   final int alerts;
+  final VoidCallback? onShowAlerts;
 
   @override
   Widget build(BuildContext context) {
@@ -236,35 +277,79 @@ class _WelcomeCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              _Stat(
-                label: 'Références',
-                value: '$itemCount',
-                color: bannerText,
-              ),
-              _Stat(
-                label: 'Disponibles',
-                value: '$available',
-                color: bannerText,
-              ),
-              _Stat(label: 'À réparer', value: '$repair', color: bannerText),
-            ],
+          const SizedBox(height: 18),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = constraints.maxWidth >= 520 ? 4 : 2;
+              final spacing = 9.0;
+              final tileWidth =
+                  (constraints.maxWidth - spacing * (columns - 1)) / columns;
+              return Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                children: [
+                  _Stat(
+                    label: 'Références',
+                    value: '$itemCount',
+                    color: bannerText,
+                    icon: Icons.inventory_2_outlined,
+                    width: tileWidth,
+                  ),
+                  _Stat(
+                    label: 'Disponibles',
+                    value: '$available',
+                    color: bannerText,
+                    icon: Icons.check_circle_outline,
+                    width: tileWidth,
+                  ),
+                  _Stat(
+                    label: 'À réparer',
+                    value: '$repair',
+                    color: bannerText,
+                    icon: Icons.build_outlined,
+                    width: tileWidth,
+                  ),
+                  _Stat(
+                    label: 'Hors service',
+                    value: '$unusable',
+                    color: bannerText,
+                    icon: Icons.do_not_disturb_alt_outlined,
+                    width: tileWidth,
+                  ),
+                ],
+              );
+            },
           ),
           if (alerts > 0) ...[
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-              decoration: BoxDecoration(
-                color: bannerText.withValues(alpha: 0.14),
+            Material(
+              color: bannerText.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: onShowAlerts,
                 borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '⚠  $alerts ${alerts == 1 ? 'stock à surveiller' : 'stocks à surveiller'}',
-                style: TextStyle(
-                  color: bannerText,
-                  fontWeight: FontWeight.w600,
+                child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        size: 18,
+                        color: bannerText,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '$alerts ${alerts == 1 ? 'stock à surveiller' : 'stocks à surveiller'}',
+                          style: TextStyle(
+                            color: bannerText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward, size: 17, color: bannerText),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -276,29 +361,63 @@ class _WelcomeCard extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value, required this.color});
+  const _Stat({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+    required this.width,
+  });
+
   final String label;
   final String value;
   final Color color;
+  final IconData icon;
+  final double width;
 
   @override
-  Widget build(BuildContext context) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-          ),
+  Widget build(BuildContext context) => SizedBox(
+    width: width,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+        child: Row(
+          children: [
+            Icon(icon, color: color.withValues(alpha: 0.9), size: 20),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 20,
+                      height: 1.1,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color.withValues(alpha: 0.82),
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        Text(
-          label,
-          style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 11),
-        ),
-      ],
+      ),
     ),
   );
 }
@@ -373,12 +492,27 @@ class _EquipmentCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 15),
-            Row(
+            Column(
               children: [
-                _Quantity(label: 'Disponible', value: item.availableQuantity),
-                _Quantity(label: 'Bon état', value: item.goodQuantity),
-                _Quantity(label: 'À réparer', value: item.repairQuantity),
-                _Quantity(label: 'Total', value: item.physicalQuantity),
+                Row(
+                  children: [
+                    _Quantity(
+                      label: 'Disponible',
+                      value: item.availableQuantity,
+                    ),
+                    _Quantity(label: 'Total', value: item.physicalQuantity),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _Quantity(label: 'À réparer', value: item.repairQuantity),
+                    _Quantity(
+                      label: 'Hors service',
+                      value: item.unusableQuantity,
+                    ),
+                  ],
+                ),
               ],
             ),
             if (item.isLowStock || item.notes.isNotEmpty) ...[
@@ -433,20 +567,30 @@ class _Quantity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    child: Row(
       children: [
         Text(
           '$value',
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-        ),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 10,
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: label == 'À réparer' && value > 0
+                ? Theme.of(context).colorScheme.tertiary
+                : label == 'Hors service' && value > 0
+                ? Theme.of(context).colorScheme.error
+                : Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 11,
+            ),
           ),
         ),
       ],

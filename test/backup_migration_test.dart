@@ -22,26 +22,48 @@ void main() {
 
   tearDown(() => database.close());
 
-  test('backup restores inventory and activity as a replacement', () async {
+  test('backup restores inventory as a replacement without activity data', () async {
     await repository.saveEquipment(_item('Tente'));
     final backup = await InventoryBackupService(database).createBackup();
+    final preview = InventoryBackupService(database).previewBackup(backup);
 
+    expect(preview.equipmentCount, 1);
+    expect(preview.createdAt, isNotNull);
+    expect(utf8.decode(backup), isNot(contains('"activity"')));
     await repository.saveEquipment(_item('Réchaud'));
     expect(await repository.getEquipment(), hasLength(2));
 
     final restoredCount = await InventoryBackupService(
       database,
     ).restoreBackup(backup);
-
     expect(restoredCount, 1);
     expect((await repository.getEquipment()).single.name, 'Tente');
-    expect(await repository.getHistory(), hasLength(1));
+    expect((await repository.getEquipment()).single.name, 'Tente');
+  });
+
+  test('invalid backup metadata is rejected before replacing existing data', () async {
+    await repository.saveEquipment(_item('Tente'));
+    final invalid = utf8.encode(
+      '{"format":"kito-backup","version":1,"createdAt":"date invalide",'
+      '"equipment":[]}',
+    );
+    final service = InventoryBackupService(database);
+
+    expect(
+      () => service.previewBackup(Uint8List.fromList(invalid)),
+      throwsFormatException,
+    );
+    await expectLater(
+      service.restoreBackup(Uint8List.fromList(invalid)),
+      throwsFormatException,
+    );
+    expect((await repository.getEquipment()).single.name, 'Tente');
   });
 
   test('invalid backup does not replace existing data', () async {
     await repository.saveEquipment(_item('Tente'));
     final invalid = utf8.encode(
-      '{"format":"kito-backup","version":1,"equipment":[],"activity":[{"id":"bad"}]}',
+      '{"format":"kito-backup","version":1,"equipment":[{"id":"bad"}]}',
     );
 
     await expectLater(
@@ -51,9 +73,39 @@ void main() {
       throwsFormatException,
     );
     expect((await repository.getEquipment()).single.name, 'Tente');
+  }  );
+
+  test('restores older backups while ignoring their activity log', () async {
+    final legacyBackup = utf8.encode('''
+      {
+        "format": "kito-backup",
+        "version": 1,
+        "createdAt": "2026-10-08T00:00:00.000Z",
+        "equipment": [{
+          "id": "legacy-tent",
+          "name": "Tente",
+          "category": "Camping",
+          "new_quantity": 1,
+          "good_quantity": 2,
+          "repair_quantity": 0,
+          "unusable_quantity": 0,
+          "low_stock_threshold": 0,
+          "is_consumable": 0,
+          "notes": ""
+        }],
+        "activity": "ignored legacy data"
+      }
+    ''');
+
+    final count = await InventoryBackupService(
+      database,
+    ).restoreBackup(Uint8List.fromList(legacyBackup));
+
+    expect(count, 1);
+    expect((await repository.getEquipment()).single.name, 'Tente');
   });
 
-  test('upgrading an old database removes active loans as returned', () async {
+  test('upgrading an old database removes loans and activity history', () async {
     final directory = await Directory.systemTemp.createTemp('kito-migration-');
     final databasePath = path.join(directory.path, 'legacy.db');
     final legacy = await databaseFactory.openDatabase(
@@ -125,12 +177,14 @@ void main() {
       5,
     );
     expect(
-      (await upgradedRepository.getHistory()).single.message,
-      '2 × Tente prêté à Camille',
+      await upgraded.database.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'movements'",
+      ),
+      isEmpty,
     );
     expect(
       await upgraded.database.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'movements'",
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'activity'",
       ),
       isEmpty,
     );

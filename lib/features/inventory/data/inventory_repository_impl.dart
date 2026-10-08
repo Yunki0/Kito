@@ -19,20 +19,6 @@ class InventoryRepositoryImpl implements InventoryRepository {
   }
 
   @override
-  Future<List<ActivityEntry>> getHistory() async {
-    final rows = await _db.query('activity', orderBy: 'created_at DESC');
-    return rows
-        .map(
-          (row) => ActivityEntry(
-            id: row['id']! as String,
-            message: row['message']! as String,
-            createdAt: DateTime.parse(row['created_at']! as String),
-          ),
-        )
-        .toList();
-  }
-
-  @override
   Future<void> saveEquipment(EquipmentItem item) async {
     final isNew = item.id.isEmpty;
     final id = isNew ? _uuid.v4() : item.id;
@@ -59,36 +45,12 @@ class InventoryRepositoryImpl implements InventoryRepository {
         );
         if (updated == 0) throw StateError('Cette fiche n’existe plus.');
       }
-      await _writeActivity(
-        txn,
-        '${isNew ? 'Matériel ajouté' : 'Matériel modifié'} : ${item.name.trim()}',
-      );
     });
   }
 
   @override
-  Future<void> deleteEquipment(String id) async {
-    await _db.transaction((txn) async {
-      final rows = await txn.query(
-        'equipment',
-        columns: ['name'],
-        where: 'id = ?',
-        whereArgs: [id],
-      );
-      if (rows.isEmpty) return;
-      final name = rows.first['name']! as String;
-      await txn.delete('equipment', where: 'id = ?', whereArgs: [id]);
-      await _writeActivity(txn, 'Matériel supprimé : $name');
-    });
-  }
-
-  Future<void> _writeActivity(Transaction txn, String message) async {
-    await txn.insert('activity', {
-      'id': _uuid.v4(),
-      'message': message,
-      'created_at': DateTime.now().toIso8601String(),
-    });
-  }
+  Future<void> deleteEquipment(String id) async =>
+      _db.delete('equipment', where: 'id = ?', whereArgs: [id]);
 
   EquipmentItem _equipmentFromRow(Map<String, Object?> row) => EquipmentItem(
     id: row['id']! as String,

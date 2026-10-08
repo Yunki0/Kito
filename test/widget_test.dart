@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kito/app.dart';
+import 'package:kito/features/inventory/domain/equipment_item.dart';
+import 'package:kito/features/inventory/presentation/equipment_form_page.dart';
 import 'package:kito/features/inventory/presentation/inventory_providers.dart';
 
 void main() {
@@ -35,7 +37,6 @@ void main() {
         overrides: [
           databaseReadyProvider.overrideWith((ref) async {}),
           equipmentProvider.overrideWith((ref) async => []),
-          historyProvider.overrideWith((ref) async => []),
         ],
         child: const KitoApp(),
       ),
@@ -47,8 +48,36 @@ void main() {
     expect(find.text('Ajouter du matériel'), findsWidgets);
     expect(find.text('Emprunts'), findsNothing);
     expect(find.text('Enregistrer une sortie'), findsNothing);
-    expect(find.byType(NavigationDestination), findsNWidgets(2));
-    expect(find.text('Journal'), findsOneWidget);
+    expect(find.byType(NavigationDestination), findsNothing);
+    expect(find.text('Journal'), findsNothing);
+  });
+
+  testWidgets('dashboard shows unusable stock without an activity section', (
+    tester,
+  ) async {
+    final item = EquipmentItem(
+      id: 'tent',
+      name: 'Tente',
+      category: 'Camping',
+      newQuantity: 0,
+      goodQuantity: 2,
+      repairQuantity: 1,
+      unusableQuantity: 3,
+      lowStockThreshold: 0,
+      isConsumable: false,
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseReadyProvider.overrideWith((ref) async {}),
+          equipmentProvider.overrideWith((ref) async => [item]),
+        ],
+        child: const KitoApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Hors service'), findsWidgets);
+    expect(find.text('Activité récente'), findsNothing);
   });
 
   testWidgets('automatically uses the system dark theme', (tester) async {
@@ -59,7 +88,6 @@ void main() {
         overrides: [
           databaseReadyProvider.overrideWith((ref) async {}),
           equipmentProvider.overrideWith((ref) async => []),
-          historyProvider.overrideWith((ref) async => []),
         ],
         child: const KitoApp(),
       ),
@@ -79,7 +107,6 @@ void main() {
         overrides: [
           databaseReadyProvider.overrideWith((ref) async {}),
           equipmentProvider.overrideWith((ref) async => []),
-          historyProvider.overrideWith((ref) async => []),
         ],
         child: const KitoApp(),
       ),
@@ -90,5 +117,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Partager une sauvegarde'), findsOneWidget);
+  });
+
+  testWidgets('keeps the save action visible on the equipment form', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: EquipmentFormPage(item: null)),
+      ),
+    );
+
+    expect(find.text('Enregistrer'), findsOneWidget);
+    expect(find.byType(FilledButton), findsOneWidget);
   });
 }
